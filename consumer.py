@@ -1,12 +1,14 @@
-import re
+
 import boto3
 import logging
 import argparse
 
+from processor import processor
+
 def getBucket(name):
     s3 = boto3.resource('s3')
     return s3.Bucket(name)
-    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -16,8 +18,9 @@ if __name__ == "__main__":
 
     readBucket = getBucket(args.r)
     writeBucket = getBucket(args.w)
-    
-    
+
+    processor(readBucket, writeBucket)
+
 
 
     
