@@ -24,13 +24,13 @@ class WidgetList:
                 self.keys.append(obj.key)
 
     def getNextKey(self):
-        self.getKeys(self.readBucket)
+        self.__getKeys()
 
         self.keys.sort()
         return self.keys.pop(0)
 
     def checkKeys(self):
-        self.getKeys(self.readBucket)
+        self.__getKeys()
         if len(self.keys) > 0:
             return True
         else:

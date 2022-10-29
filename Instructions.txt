@@ -1,0 +1,3 @@
+To run the programme:
+
+$ python consumer.py -r [sourceBucket] -w [destinationBucket]

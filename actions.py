@@ -16,7 +16,7 @@ def updateWidget(widget, writeBucket, db):
     logging.info("Update request received")
 
 def deleteWidget(widget, writeBucket, db):
-    pass
+    logging.info("Delete request received")
 
 
 def formatWidget(widget):
