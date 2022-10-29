@@ -1,4 +1,3 @@
-from fileinput import filename
 from widget import WidgetList, decoder
 import json
 from actions import createWidget, updateWidget, deleteWidget

@@ -15,17 +15,17 @@ class WidgetList:
     keys = []
     def __init__(self, readBucket):
         self.readBucket = readBucket
-        self.getKeys(readBucket)
+        self.__getKeys()
 
-    def getKeys(self, readBucket):
+    def __getKeys(self):
         logging.info('Getting keys from producer...')
-        for obj in readBucket.objects.all():
+        for obj in self.readBucket.objects.all():
             if obj.key not in self.keys:
                 self.keys.append(obj.key)
 
     def getNextKey(self):
         self.getKeys(self.readBucket)
-        
+
         self.keys.sort()
         return self.keys.pop(0)
 
