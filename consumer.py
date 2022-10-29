@@ -10,7 +10,8 @@ if __name__ == "__main__":
     parser.add_argument('-r', action='store', type=str, required=True)
     parser.add_argument('-w', action='store', type=str, required=True)
     args = parser.parse_args()
-    logging.basicConfig(level=logging.INFO)
+    fname = datetime.now().strftime("%Y-%m-%d-%H-%M")
+    logging.basicConfig(filename=f'{fname}.log',level=logging.INFO)
     logging.info("parsing arguments...")
     processor(args.r, args.w)
 

@@ -1,5 +1,4 @@
 from fileinput import filename
-import imp
 from widget import WidgetList, decoder
 import json
 from actions import createWidget, updateWidget, deleteWidget
@@ -27,10 +26,10 @@ def processor(r, w):
             elif(widget['type'] == 'delete'):
                 deleteWidget(widget, writeBucket, db)
             else:
-                logging.warning("Invalid action type for widget" + widget['widgetId'])
+                logging.warning("Invalid action type for widget with ID: " + widget['widgetId'])
         else:
             time.sleep(.1)
-            logging.info('sleeping')
+            logging.info('No keys found in S3 Bucket')
             count += 1
 
 def getWidget(readBucket, widgetList):
@@ -44,6 +43,9 @@ def getWidgetJson(readBucket, fileName):
     data = None
     try:
         data = json.load(f)
+        if not validateJson(data):
+            logging.warning('Missing required data, skipping file')
+            data = None
     except Exception as ex:
         logging.warning("Error converting to JSON, skipping file: " + str(ex))
     finally:
@@ -69,3 +71,9 @@ def getDB():
     dynamo = boto3.resource('dynamodb')
     logging.info('Connected to DynamoDB')
     return dynamo.Table('widgets')
+
+def validateJson(input):
+    if 'type' in input and 'requestId' in input and 'widgetId' in input and 'owner' in input:
+        return True
+    else:
+        return False
