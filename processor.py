@@ -16,6 +16,8 @@ def processor(r, w):
     while(True):
         if(widgetList.checkKeys()):
             widget = getWidget(readBucket, widgetList)
+            if widget is None:
+                continue
             if (widget['type'] == 'WidgetCreateRequest'):
                 createWidget(widget, writeBucket, getDB())
             elif(widget['type'] =='WidgetUpdateRequest'):
@@ -34,18 +36,22 @@ def getWidget(readBucket, widgetList):
 def getWidgetJson(readBucket, fileName):
     readBucket.download_file(fileName, fileName)
     f = open(fileName)
-    data = json.load(f)
-    f.close()
-    os.remove(fileName)
-    readBucket.delete_objects(
-        Delete={
-            'Objects': [
-                {
-                    'Key': fileName
-                },
-            ],
-        }
-    )
+    try:
+        data = json.load(f)
+    except Exception as ex:
+        logging.warning("Error converting to JSON, skipping file: " + str(ex))
+    finally:
+        f.close()
+        os.remove(fileName)
+        readBucket.delete_objects(
+            Delete={
+                'Objects': [
+                    {
+                        'Key': fileName
+                    },
+                ],
+            }
+        )
     return data
 
 def getBucket(name):
