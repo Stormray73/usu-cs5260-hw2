@@ -25,6 +25,7 @@ class WidgetList:
 
     def getNextKey(self):
         self.getKeys(self.readBucket)
+        
         self.keys.sort()
         return self.keys.pop(0)
 

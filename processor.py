@@ -12,21 +12,26 @@ def processor(r, w):
     logging.info('Starting processor...')
     readBucket = getBucket(r)
     writeBucket = getBucket(w)
+    db = getDB()
     widgetList = WidgetList(readBucket)
-    while(True):
+    count = 0
+    while(count < 10):
         if(widgetList.checkKeys()):
             widget = getWidget(readBucket, widgetList)
             if widget is None:
                 continue
-            if (widget['type'] == 'WidgetCreateRequest'):
-                createWidget(widget, writeBucket, getDB())
-            elif(widget['type'] =='WidgetUpdateRequest'):
-                updateWidget(widget, writeBucket, getDB())
-            elif(widget['type'] == 'WidgetDeleteRequest'):
-                deleteWidget(widget, writeBucket, getDB())
-            #else - throw warning error
+            if (widget['type'] == 'create'):
+                createWidget(widget, writeBucket, db)
+            elif(widget['type'] =='update'):
+                updateWidget(widget, writeBucket, db)
+            elif(widget['type'] == 'delete'):
+                deleteWidget(widget, writeBucket, db)
+            else:
+                logging.warning("Invalid action type for widget" + widget['widgetId'])
         else:
             time.sleep(.1)
+            logging.info('sleeping')
+            count += 1
 
 def getWidget(readBucket, widgetList):
     nextKey = widgetList.getNextKey()
@@ -36,6 +41,7 @@ def getWidget(readBucket, widgetList):
 def getWidgetJson(readBucket, fileName):
     readBucket.download_file(fileName, fileName)
     f = open(fileName)
+    data = None
     try:
         data = json.load(f)
     except Exception as ex:
