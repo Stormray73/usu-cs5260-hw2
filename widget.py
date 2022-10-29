@@ -1,7 +1,6 @@
 import json
 from collections import namedtuple
-import time
-
+import logging
 
 class Widget:
     
@@ -19,6 +18,7 @@ class WidgetList:
         self.getKeys(readBucket)
 
     def getKeys(self, readBucket):
+        logging.info('Getting keys from producer...')
         for obj in readBucket.objects.all():
             if obj.key not in self.keys:
                 self.keys.append(obj.key)
