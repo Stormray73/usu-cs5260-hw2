@@ -14,6 +14,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename=f'{fname}.log',level=logging.INFO)
     logging.info("parsing arguments...")
     processor(args.r, args.w)
+    logging.info("Programme Terminating...")
 
 
 
