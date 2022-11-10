@@ -40,17 +40,17 @@ def processor(rb, w, rq):
                 logging.warning("Invalid action type for widget with ID: " + widget['widgetId'])
 
 def getBucket(name):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource('s3', region_name='us-east-1')
     logging.info(f'Connected to bucket {name}')
     return s3.Bucket(name)
 
 def getDB():
-    dynamo = boto3.resource('dynamodb')
+    dynamo = boto3.resource('dynamodb', region_name='us-east-1')
     logging.info('Connected to DynamoDB')
     return dynamo.Table('widgets')
 
 def getSQS(name):
-    sqs = boto3.resource('sqs')
-    url = boto3.client('sqs').get_queue_url(QueueName=name)['QueueUrl']
+    sqs = boto3.resource('sqs', region_name='us-east-1')
+    url = boto3.client('sqs', region_name='us-east-1').get_queue_url(QueueName=name)['QueueUrl']
     logging.info("Connected to SQS")
     return sqs.Queue(url)
