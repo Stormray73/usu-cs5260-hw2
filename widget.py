@@ -27,29 +27,32 @@ class Bucket:
 
     def getWidget(self):
         filename = self.__getNextKey()
-        self.__readBucket.download_file(filename, filename)
-        f = open(filename)
-        data = None
         try:
-            data = json.load(f)
-            if not self.__validateJson(data):
-                logging.warning('Missing required data, skipping file')
-                data = None
+            self.__readBucket.download_file(filename, filename)
+            f = open(filename)
+            data = None
+            try:
+                data = json.load(f)
+                if not self.__validateJson(data):
+                    logging.warning('Missing required data, skipping file')
+                    data = None
+            except Exception as ex:
+                logging.warning("Error converting to JSON, skipping file: " + str(ex))
+            finally:
+                f.close()
+                os.remove(filename)
+                self.__readBucket.delete_objects(
+                    Delete={
+                        'Objects': [
+                            {
+                                'Key': filename
+                            },
+                        ],
+                    }
+                )
+            return data
         except Exception as ex:
-            logging.warning("Error converting to JSON, skipping file: " + str(ex))
-        finally:
-            f.close()
-            os.remove(filename)
-            self.__readBucket.delete_objects(
-                Delete={
-                    'Objects': [
-                        {
-                            'Key': filename
-                        },
-                    ],
-                }
-            )
-        return data
+            logging.error("Unable to read file from bucket: " + str(ex))
 
     def __validateJson(self, input):
         if 'type' in input and 'requestId' in input and 'widgetId' in input and 'owner' in input:
