@@ -100,13 +100,6 @@ class WidgetList:
             else:
                 return self.widgets.pop(0)
 
-    def checkKeys(self):
-        self.__getKeys()
-        if len(self.keys) > 0:
-            return True
-        else:
-            return False
-
     def __validateJson(self, input):
         if 'type' in input and 'requestId' in input and 'widgetId' in input and 'owner' in input:
             return True
