@@ -6,16 +6,28 @@ import boto3
 import logging
 
 
-def processor(r, w):
+def processor(rb, w, rq):
     logging.info('Starting processor...')
-    readBucket = getBucket(r)
+    readBucket = getBucket(rb)
     writeBucket = getBucket(w)
+    queue = getSQS(rq)
     db = getDB()
     bucket = Bucket(readBucket)
+    widgetList = WidgetList(queue)
     count = 0
+
     while(count < 10):
+        processQueue = []
         if(not bucket.emptyBucket()):
-            widget = bucket.getWidget()
+            processQueue.append(bucket.getWidget())
+        elif(not widgetList.emptyQueue):
+            processQueue.append(widgetList.getWidget())
+        else:
+            time.sleep(2)
+            logging.info('No keys found')
+            count += 1
+            continue
+        for widget in processQueue:
             if widget is None:
                 continue
             if (widget['type'] == 'create'):
@@ -26,10 +38,6 @@ def processor(r, w):
                 deleteWidget(widget, writeBucket, db)
             else:
                 logging.warning("Invalid action type for widget with ID: " + widget['widgetId'])
-        else:
-            time.sleep(.1)
-            logging.info('No keys found in S3 Bucket')
-            count += 1
 
 def getBucket(name):
     s3 = boto3.resource('s3')
@@ -41,3 +49,8 @@ def getDB():
     logging.info('Connected to DynamoDB')
     return dynamo.Table('widgets')
 
+def getSQS(name):
+    sqs = boto3.resource('sqs')
+    url = boto3.client('sqs').get_queue_url(QueueName=name)['QueueUrl']
+    logging.info("Connected to SQS")
+    return sqs.Queue(url)

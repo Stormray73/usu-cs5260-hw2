@@ -51,33 +51,61 @@ class Bucket:
             )
         return data
 
-    def __validateJson(input):
+    def __validateJson(self, input):
         if 'type' in input and 'requestId' in input and 'widgetId' in input and 'owner' in input:
             return True
         else:
             return False
 
 class WidgetList:
-    keys = []
-    def __init__(self, readBucket):
-        self.readBucket = readBucket
-        self.__getKeys()
+    widgets = []
+    emptyQueue = False
+    def __init__(self, queue):
+        self.queue = queue
+        self.__getWidgets()
 
-    def __getKeys(self):
-        logging.info('Getting keys from producer...')
-        for obj in self.readBucket.objects.all():
-            if obj.key not in self.keys:
-                self.keys.append(obj.key)
+    def __getWidgets(self):
+        msgList = self.queue.receive_messages(MaxNumberOfMessages=10, VisibilityTimeout=5)
+        logging.info("Polled message list")
+        if (len(msgList) > 0):
+            self.emptyQueue = False
+            for msg in msgList:
+                data = json.loads(msg.body)
+                if self.__validateJson(data):
+                    self.widgets.append(data)
+                else:
+                    logging.error("Missing required information, widget skipped")
+                self.queue.delete_messages(
+                    Entries=[
+                        {
+                            'Id': data['widgetId'],
+                            'ReceiptHandle': msg.receipt_handle
+                        }
+                    ]
+                )
+                # TODO: Add failure handling
+        else:
+            self.emptyQueue = True
 
-    def getNextKey(self):
-        self.__getKeys()
-
-        self.keys.sort()
-        return self.keys.pop(0)
+    def getWidget(self):
+        if(len(self.widgets) > 0):
+            return self.widgets.pop(0)
+        else:
+            self.__getWidgets()
+            if(self.emptyQueue):
+                return None
+            else:
+                return self.widgets.pop(0)
 
     def checkKeys(self):
         self.__getKeys()
         if len(self.keys) > 0:
+            return True
+        else:
+            return False
+
+    def __validateJson(self, input):
+        if 'type' in input and 'requestId' in input and 'widgetId' in input and 'owner' in input:
             return True
         else:
             return False
